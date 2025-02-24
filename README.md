@@ -91,7 +91,7 @@ The pipeline is designed to support any BI tool, with Power BI as an example.
   - SQL scripts to create views from the Silver layer, perform aggregations, and store data in the Gold layer using CETAS.
   - Configuration files for Synapse SQL (if applicable).
 - `powerbi/`:
-  -[`cri_dashboard.pbix`](https://app.powerbi.com/links/rOGhz2xjUn?ctid=913f18ec-7f26-4c5f-a816-784fe9a58edd&pbi_source=linkShare): Power BI dashboard file for visualization.
+  -[`a1.pbix`](https://app.powerbi.com/view?r=eyJrIjoiODM0MjU5MjktNzYyZC00YTdhLThjNmEtNTYzMzhkMmE4Y2NhIiwidCI6IjkxM2YxOGVjLTdmMjYtNGM1Zi1hODE2LTc4NGZlOWE1OGVkZCIsImMiOjh9): Power BI dashboard file for visualization.
 
 ---
 
