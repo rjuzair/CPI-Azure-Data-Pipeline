@@ -1,0 +1,9 @@
+"VAR TotalCustomers = DISTINCTCOUNT('gold vw_customer_retention'[customerkey])
+VAR ChurnedCustomers = CALCULATE(
+    DISTINCTCOUNT('gold vw_customer_retention'[customerkey]), 
+    'gold vw_customer_retention'[churn_risk] IN {""Churned in 2017"", ""Churned in 2016 or 2017""}
+)
+RETURN 
+    IF(TotalCustomers > 0, FORMAT(DIVIDE(ChurnedCustomers, TotalCustomers, 0), ""0.00%""), BLANK())
+
+"

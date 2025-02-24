@@ -1,0 +1,3 @@
+"SUM('gold vw_customer_retention'[total_spent])
+
+"
