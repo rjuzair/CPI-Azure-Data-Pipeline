@@ -15,7 +15,7 @@ The **Customer Retention Intelligence (CRI)** project is a cloud-native data eng
 ## Data Pipeline Architecture
 The pipeline follows a **Bronze-Silver-Gold** layered architecture, depicted in the flowchart below:
 
-![Data Architecture Flowchart](Data pipeline diagram.png)
+![Data Architecture Flowchart]([Data pipeline diagram.png](https://github.com/rjuzair/CPI-Azure-Data-Pipeline/blob/main/Data%20pipeline%20diagram.png))
 
 ### Data Flow
 1. **Data Source**: Ingests data via HTTP (e.g., web APIs or file).
