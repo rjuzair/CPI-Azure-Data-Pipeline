@@ -1,0 +1,11 @@
+"CALCULATE(
+    DISTINCTCOUNT('gold vw_customer_retention'[customerkey]), 
+    'gold vw_customer_retention'[total_orders] = 1
+)
+
+Returning_Customers = 
+CALCULATE(
+    DISTINCTCOUNT('gold vw_customer_retention'[customerkey]), 
+    'gold vw_customer_retention'[total_orders] > 1
+)
+"
