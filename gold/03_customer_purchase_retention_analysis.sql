@@ -1,4 +1,5 @@
-DROP EXTERNAL TABLE gold.vw_customer_retention;
+IF OBJECT_ID('gold.vw_customer_retention') IS NOT NULL
+    DROP EXTERNAL TABLE gold.vw_customer_retention;
 
 CREATE EXTERNAL TABLE gold.vw_customer_retention
 WITH (

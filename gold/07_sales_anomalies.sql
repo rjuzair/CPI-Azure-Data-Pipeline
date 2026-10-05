@@ -8,7 +8,8 @@ FROM gold.sales
 WHERE YEAR(orderdate) BETWEEN 2015 AND 2017
 GROUP BY YEAR(orderdate), MONTH(orderdate);
 
-DROP EXTERNAL TABLE gold.vw_sales_anomalies;
+IF OBJECT_ID('gold.vw_sales_anomalies') IS NOT NULL
+    DROP EXTERNAL TABLE gold.vw_sales_anomalies;
 
 CREATE EXTERNAL TABLE gold.vw_sales_anomalies
 WITH (
