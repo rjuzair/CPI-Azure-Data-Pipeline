@@ -16,7 +16,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Customers
 ------------------------
-CREATE VIEW gold.customers AS
+CREATE OR ALTER VIEW gold.customers AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Customers/',
@@ -26,7 +26,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Products
 ------------------------
-CREATE VIEW gold.products AS
+CREATE OR ALTER VIEW gold.products AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Products/',
@@ -36,7 +36,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Returns
 ------------------------
-CREATE VIEW gold.returns AS
+CREATE OR ALTER VIEW gold.returns AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Returns/',
@@ -46,7 +46,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Sales
 ------------------------
-CREATE VIEW gold.sales AS
+CREATE OR ALTER VIEW gold.sales AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Sales/',
@@ -56,7 +56,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Subcategories
 ------------------------
-CREATE VIEW gold.subcategories AS
+CREATE OR ALTER VIEW gold.subcategories AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Sub_Categories/',
@@ -66,7 +66,7 @@ FROM OPENROWSET (
 ------------------------
 -- CREATE VIEW: Productcategories
 ------------------------
-CREATE VIEW gold.productcategories AS
+CREATE OR ALTER VIEW gold.productcategories AS
 SELECT *
 FROM OPENROWSET(
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Product_Categories/',
@@ -78,7 +78,7 @@ FROM OPENROWSET(
 ------------------------
 -- CREATE VIEW: Territories
 ------------------------
-CREATE VIEW gold.territories AS
+CREATE OR ALTER VIEW gold.territories AS
 SELECT *
 FROM OPENROWSET (
     BULK 'https://a1projectstorage.dfs.core.windows.net/silver/Territories/',

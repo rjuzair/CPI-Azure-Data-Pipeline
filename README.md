@@ -1,101 +1,65 @@
-# Customer Retention Intelligence (CRI) - Azure Data Engineering Pipeline
+# Customer Retention Intelligence — Azure Data Engineering Pipeline
 
-## Project Overview
-The **Customer Retention Intelligence (CRI)** project is a cloud-native data engineering solution built on Microsoft Azure to process, transform, and analyze customer retention and churn data from the AdventureWorks dataset (2015-2017). This pipeline ingests data, transforms it through a layered architecture, and prepares it for analytics, with visualization as a secondary focus using Power BI.
+An end-to-end, cloud-native data pipeline on **Microsoft Azure** that ingests the AdventureWorks sales dataset (2015–2017), refines it through a **medallion (bronze → silver → gold) architecture**, and serves customer-retention, churn and sales analytics to a **Power BI** dashboard.
 
-### Core Azure Components
-- **Azure Data Factory (ADF)**: Orchestrates data ingestion and workflows.
-- **Azure Data Lake Storage (ADLS) Gen2**: Stores raw, transformed, and aggregated data.
-- **Azure Databricks**: Transforms data using PySpark.
-- **Azure Synapse Analytics**: Performs serverless SQL analytics and aggregations.
-- **Power BI**: Visualizes insights from processed data.
+**[▶ View the live Power BI dashboard](https://app.powerbi.com/view?r=eyJrIjoiODM0MjU5MjktNzYyZC00YTdhLThjNmEtNTYzMzhkMmE4Y2NhIiwidCI6IjkxM2YxOGVjLTdmMjYtNGM1Zi1hODE2LTc4NGZlOWE1OGVkZCIsImMiOjh9)**
 
----
+![Azure Data Factory](https://img.shields.io/badge/Azure%20Data%20Factory-0078D4?logo=microsoftazure&logoColor=white)
+![Databricks](https://img.shields.io/badge/Azure%20Databricks-FF3621?logo=databricks&logoColor=white)
+![Synapse](https://img.shields.io/badge/Synapse%20Analytics-0078D4?logo=microsoftazure&logoColor=white)
+![PySpark](https://img.shields.io/badge/PySpark-E25A1C?logo=apachespark&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-F2C811?logo=powerbi&logoColor=black)
 
-## Data Pipeline Architecture
-The pipeline follows a **Bronze-Silver-Gold** layered architecture, depicted in the flowchart below:
+## Architecture
+![Data pipeline architecture](docs/architecture.png)
 
-![Data Architecture Flowchart](https://github.com/rjuzair/CPI-Azure-Data-Pipeline/blob/main/Data%20pipeline%20diagram.png)
+| Layer | Service | Format | What happens |
+|---|---|---|---|
+| **Bronze** | Azure Data Factory → ADLS Gen2 | CSV | A parameterised, metadata-driven pipeline (Lookup + ForEach + Copy) ingests every source file over HTTP |
+| **Silver** | Azure Databricks (PySpark) → ADLS Gen2 | Parquet | Column standardisation, type casting, cleaning and enrichment |
+| **Gold** | Azure Synapse serverless SQL → ADLS Gen2 | Parquet | Views over silver data and analytical tables materialised with **CETAS** |
+| **Serving** | Power BI | — | KPIs, churn funnel, trends and drill-downs |
 
-### Data Flow
-1. **Data Source**: Ingests data via HTTP (e.g., web APIs or file).
-2. **Bronze Layer**: Raw data is stored in ADLS Gen2 via ADF.
-3. **Silver Layer**: Databricks transforms and cleans data, storing it in ADLS Gen2.
-4. **Gold Layer**: Synapse Analytics aggregates data for reporting, stored in ADLS Gen2.
-5. **Visualization**: Power BI connects to the Gold layer for dashboards.
+## Analytics in the gold layer
+| Table | Business question |
+|---|---|
+| `vw_customer_retention` | Who are our customers, how much do they spend, and are they active or churned? |
+| `vw_product_lifecycle` | Which products are new, trending or declining? |
+| `vw_product_bundle_analysis` | Which products are frequently bought together? |
+| `vw_sales_by_region` | How is revenue growing month over month in each region and country? |
+| `vw_sales_anomalies` | Which months show unusual (±20%) revenue swings? |
 
-### Layer Details
-| **Layer**       | **Purpose**                        | **Azure Service**         | **Storage Format** | **Key Activities**                              |
-|-----------------|------------------------------------|---------------------------|--------------------|------------------------------------------------|
-| **Bronze**      | Store raw data                     | Azure Data Factory        | CSV/Parquet        | Ingest data from HTTP sources.                 |
-| **Silver**      | Clean and transform data           | Azure Databricks (PySpark)| Parquet            | Standardize formats, remove duplicates.        |
-| **Gold**        | Aggregate data for analytics       | Azure Synapse Analytics   | Parquet            | Create aggregates (e.g., churn rates) via SQL. |
+Power BI KPIs (DAX in [`power-bi/dax-measures`](power-bi/dax-measures)): **churn rate**, **active / new / returning customers**, **total revenue**, with a year slicer for 2015–2017.
 
----
+## Repository structure
+```
+├── bronze/ingestion_parameters.json   # Source URLs and sink folders for the ADF ForEach loop
+├── silver/silver_layer_transformation.ipynb   # Databricks PySpark notebook
+├── gold/                              # Synapse SQL, run in numeric order
+│   ├── 00_create_schema.sql
+│   ├── 01_config.sql                  # Master key, credential, external data sources, file format
+│   ├── 02_views.sql                   # gold.* views over silver Parquet files
+│   └── 03–07_*.sql                    # CETAS analytical tables
+├── power-bi/
+│   ├── customer_retention_dashboard.pbix
+│   └── dax-measures/
+└── docs/architecture.{png,drawio}
+```
 
-## Visualization with Power BI
-Power BI dashboards include:
-- **KPIs**: Churn Rate (%), Active Customers, Total Revenue ($).
-- **Charts**: Funnel chart for churn risk.
-- **Tables**: Customer trends with conditional formatting.
-- **Filters**: Year slicer (2015-2017).
+## Reproducing the pipeline
+1. **Storage** — create an ADLS Gen2 account with `bronze`, `silver` and `gold` containers.
+2. **Ingest** — in Data Factory, build a pipeline that looks up [`bronze/ingestion_parameters.json`](bronze/ingestion_parameters.json) and, for each entry, copies the CSV from the HTTP source into `bronze/<p_sink_folder>/<p_sink_file>`.
+3. **Transform** — register a service principal with *Storage Blob Data Contributor* on the account, store its client ID, secret and tenant ID in a Databricks secret scope (`cri-key-vault`, backed by Azure Key Vault), then run [`silver/silver_layer_transformation.ipynb`](silver/silver_layer_transformation.ipynb).
+4. **Serve** — in a Synapse workspace (serverless SQL pool) run the scripts in [`gold/`](gold) in order. Replace the master-key password placeholder in `01_config.sql` and the storage account name if yours differs. CETAS will not overwrite existing files, so clear the target folder in the `gold` container before re-running a script.
+5. **Visualise** — open the `.pbix` file and point the data source at your Synapse serverless SQL endpoint.
 
-The pipeline is designed to support any BI tool, with Power BI as an example.
+## Possible improvements
+- Parameterise the storage account name across ADF, Databricks and Synapse, and commit the ADF pipeline JSON (ARM/Bicep templates) for one-click deployment.
+- Load silver tables as **Delta Lake** to get schema enforcement and incremental (MERGE) loads.
+- Add data-quality checks (e.g. Great Expectations) between layers and schedule the pipeline with ADF triggers.
 
----
-
-# CRI Pipeline Setup Instructions
-
-## Setup Instructions
-
-### Create ADLS Gen2 Account
-1. Set up an **Azure Data Lake Storage (ADLS) Gen2** account.
-2. Create the following containers within the ADLS Gen2 account:
-   - `bronze`: For raw data storage.
-   - `silver`: For transformed data storage.
-   - `gold`: For aggregated data storage.
-
-### Ingest Data
-1. Use **Azure Data Factory (ADF)** to build a dynamic pipeline for data ingestion.
-2. Locate the `.json` file in the `bronze/` folder, which contains links to all data sources (e.g., HTTP sources).
-3. Configure ADF to use this `.json` file to dynamically ingest data into the `bronze` container.
-
-### Transform Data
-1. Use **Azure Databricks** to process data stored in the `bronze` container.
-2. Navigate to the `silver_layer/` folder, which contains a Databricks notebook file.
-3. Run the notebook to perform data cleaning, generate basic insights, and apply transformations.
-4. Store the transformed results in the `silver` container.
-
-### Aggregate Data
-1. Use **Azure Synapse Analytics** to aggregate data for reporting.
-2. Access the `gold_layer/` folder, which contains SQL scripts.
-3. These SQL scripts:
-   - Create views of data from the `silver` layer.
-   - Perform aggregations and store the results in the `gold` layer using CETAS (Create External Table As Select) statements.
-4. Execute these SQL scripts in Synapse to generate the aggregated tables.
-   - Configuration files for Synapse SQL (if applicable) are also located in the `gold_layer/` folder.
-
-### Visualize
-1. Connect **Power BI** to the Azure Synapse SQL database.
-2. Navigate to the `powerbi/` folder and load the `cri_dashboard.pbix` file.
-3. Use the dashboard to visualize the aggregated data from the `gold` layer.
-
-## Repository Contents
-- `README.md`: This file.
-- `flowchart.png`: Diagram of the data pipeline.
-- `bronze/`:
-  - `.json` file with links to all data sources (used to build the dynamic ADF pipeline).
-- `silver_layer/`:
-  - Databricks notebook file for data cleaning, insights, and transformations.
-- `gold_layer/`:
-  - SQL scripts to create views from the Silver layer, perform aggregations, and store data in the Gold layer using CETAS.
-  - Configuration files for Synapse SQL (if applicable).
-- `powerbi/`:
-  -[`a1.pbix`](https://app.powerbi.com/view?r=eyJrIjoiODM0MjU5MjktNzYyZC00YTdhLThjNmEtNTYzMzhkMmE4Y2NhIiwidCI6IjkxM2YxOGVjLTdmMjYtNGM1Zi1hODE2LTc4NGZlOWE1OGVkZCIsImMiOjh9): Power BI dashboard file for visualization.
-
----
+## Data
+AdventureWorks sample data (Microsoft), sourced as CSV files from a public GitHub mirror.
 
 ## License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
+[MIT](LICENSE)
