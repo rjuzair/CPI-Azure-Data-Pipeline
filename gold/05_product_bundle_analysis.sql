@@ -1,4 +1,5 @@
-DROP EXTERNAL TABLE gold.vw_product_bundle_analysis;
+IF OBJECT_ID('gold.vw_product_bundle_analysis') IS NOT NULL
+    DROP EXTERNAL TABLE gold.vw_product_bundle_analysis;
 
 CREATE EXTERNAL TABLE gold.vw_product_bundle_analysis
 WITH (
@@ -17,8 +18,8 @@ JOIN gold.sales s2
     AND s1.productkey <> s2.productkey
 WHERE YEAR(s1.orderdate) BETWEEN 2015 AND 2017
 GROUP BY s1.productkey, s2.productkey
-HAVING COUNT(DISTINCT s1.ordernumber) > 10
+HAVING COUNT(DISTINCT s1.ordernumber) > 10;
+
+
+SELECT * FROM gold.vw_product_bundle_analysis
 ORDER BY times_bought_together DESC;
-
-
-SELECT * FROM gold.vw_product_bundle_analysis;
