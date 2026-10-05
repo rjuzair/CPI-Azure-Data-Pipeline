@@ -1,4 +1,5 @@
-DROP EXTERNAL TABLE gold.vw_sales_by_region;
+IF OBJECT_ID('gold.vw_sales_by_region') IS NOT NULL
+    DROP EXTERNAL TABLE gold.vw_sales_by_region;
 
 CREATE EXTERNAL TABLE gold.vw_sales_by_region
 WITH (

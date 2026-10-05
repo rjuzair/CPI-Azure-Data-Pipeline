@@ -1,4 +1,5 @@
-DROP EXTERNAL TABLE gold.vw_product_lifecycle;
+IF OBJECT_ID('gold.vw_product_lifecycle') IS NOT NULL
+    DROP EXTERNAL TABLE gold.vw_product_lifecycle;
 
 CREATE EXTERNAL TABLE gold.vw_product_lifecycle
 WITH (
