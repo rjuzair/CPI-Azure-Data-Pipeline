@@ -22,7 +22,8 @@ SELECT
     END AS productstatus
 FROM gold.sales s
 JOIN gold.products p ON s.productkey = p.productkey
-WHERE s.orderdate BETWEEN '2016-01-01' AND '2017-12-31'
+-- Last 12 months of data (the dataset ends on 2017-12-31)
+WHERE s.orderdate > DATEADD(MONTH, -12, '2017-12-31') AND s.orderdate <= '2017-12-31'
 GROUP BY p.productkey, p.productname;
 
 

@@ -24,7 +24,7 @@ An end-to-end, cloud-native data pipeline on **Microsoft Azure** that ingests th
 | Table | Business question |
 |---|---|
 | `vw_customer_retention` | Who are our customers, how much do they spend, and are they active or churned? |
-| `vw_product_lifecycle` | Which products are new, trending or declining? |
+| `vw_product_lifecycle` | Which products are new, trending or declining over the last 12 months? |
 | `vw_product_bundle_analysis` | Which products are frequently bought together? |
 | `vw_sales_by_region` | How is revenue growing month over month in each region and country? |
 | `vw_sales_anomalies` | Which months show unusual (±20%) revenue swings? |
